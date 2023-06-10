@@ -27,10 +27,26 @@ async function run() {
 
         // Create a classes collection
         const allDataCollection = client.db('CaptureDB').collection('classes')
-        app.get('/alldata', async(req,res)=>{
+        // Create A collection for users
+        const usersCollection = client.db('CaptureDB').collection('users')
+
+        app.get('/alldata', async (req, res) => {
             const result = await allDataCollection.find().toArray()
             res.send(result);
         })
+
+        // Get user
+        app.get("/users", async (req, res) => {
+            const result = await usersCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.post("/users", async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user);
+            res.send(result)
+        })
+
 
 
 
