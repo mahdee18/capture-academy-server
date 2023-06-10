@@ -4,15 +4,29 @@ const cors = require('cors')
 const { MongoClient, ServerApiVersion } = require('mongodb');
 require('dotenv').config()
 const port = process.env.PORT || 3000;
-
 // Middleware
 app.use(cors());
 app.use(express.json())
 
+// Verify JWT
+const verifyJWT = (req, res, next) => {
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+        return res.status(401).send({ error: true, message: 'Unauthorized Access!' })
+    }
+    const token = authorization.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN, (error, decoded) => {
+        if (error) {
+            return res.status(401).send({ error: true, message: 'Unauthorized access!' })
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ftqixdj.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri)
+
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
     serverApi: {
@@ -25,6 +39,13 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
 
+
+        app.post("/jwt", (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
+            res.send({ token })
+        })
+        
         // Create a classes collection
         const allDataCollection = client.db('CaptureDB').collection('classes')
         // Create A collection for users
