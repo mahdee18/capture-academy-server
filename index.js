@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 var jwt = require('jsonwebtoken');
 const port = process.env.PORT || 3000;
@@ -24,7 +24,17 @@ const verifyJWT = (req, res, next) => {
         next();
     })
 }
+// Verify Admin
 
+const verifyAdmin = async (req, res, next) => {
+    const email = req.decoded.email;
+    const query = { email: email };
+    const user = await usersCollection.findOne(query);
+    if (user?.role !== "admin") {
+        return res.status(403).send({ error: true, message: "Forbidden Access" })
+    }
+    next()
+}
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ftqixdj.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -46,7 +56,7 @@ async function run() {
             const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
             res.send({ token })
         })
-        
+
         // Create a classes collection
         const allDataCollection = client.db('CaptureDB').collection('classes')
         // Create A collection for users
@@ -69,8 +79,35 @@ async function run() {
             res.send(result)
         })
 
+        // Role Admin
+
+        app.get("/users/admin/:email", verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            if (req.decoded.email !== email) {
+                res.send({ admin: false })
+            }
+
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            const result = { admin: user?.role === "admin" }
+            res.send(result)
+        })
 
 
+        app.patch("/users/admin/:id", async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    role: "admin",
+                },
+            };
+            const result = await usersCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        });
+
+
+        
 
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
