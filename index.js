@@ -108,6 +108,23 @@ async function run() {
             const result = await selectedClassCollection.deleteOne({_id: new ObjectId(id)});
             res.send(result);
         })
+
+        // Approve Class
+        app.patch("/alldata/:status", async (req, res) => {
+            const status = req.params.status;
+            console.log(status)
+            const filter = { class_status: status };
+            const updateDoc = {
+              $set: {
+                class_status: "approved",
+              },
+            };
+            const result = await allDataCollection.updateOne(filter, updateDoc);
+            res.send(result);
+          });
+
+
+
         //Role Admin
 
         app.get("/users/admin/:email", verifyJWT, async (req, res) => {
