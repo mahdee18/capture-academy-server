@@ -5,6 +5,8 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 var jwt = require('jsonwebtoken');
 const port = process.env.PORT || 3000;
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+// console.log(stripe)
 // Middleware
 app.use(cors());
 app.use(express.json())
@@ -64,6 +66,9 @@ async function run() {
 
         // Create A collection for selected Users
         const selectedClassCollection = client.db('CaptureDB').collection('selectedClass')
+        
+        // Create A collection for Payment
+        const paymentsCollection = client.db('CaptureDB').collection('payment')
 
         app.get('/alldata', async (req, res) => {
             const result = await allDataCollection.find().toArray()
@@ -122,7 +127,7 @@ async function run() {
             const result = await allDataCollection.updateOne(filter, updateDoc);
             res.send(result);
         });
-        // Approve Class
+        // Denied Class
         app.patch("/deny/:status", async (req, res) => {
             const status = req.params.status;
             console.log(status)
@@ -204,7 +209,24 @@ async function run() {
             res.send(result);
         });
 
+        // Payment Integration
+        app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+            const { price } = req.body;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: price * amount,
+                currency: "usd",
+                payment_method_types: ["card"],
+            });
+            res.send({ clientSecret: paymentIntent.client_secret });
+        });
 
+
+        app.post("/paymenthistory", verifyJWT, async (req, res) => {
+            const payment = req.body;
+            const result = await paymentsCollection.insertOne(payment);
+            res.send(result);
+        });
 
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
