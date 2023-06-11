@@ -62,6 +62,9 @@ async function run() {
         // Create A collection for users
         const usersCollection = client.db('CaptureDB').collection('users')
 
+        // Create A collection for selected Users
+        const selectedClassCollection = client.db('CaptureDB').collection('selectedClass')
+
         app.get('/alldata', async (req, res) => {
             const result = await allDataCollection.find().toArray()
             res.send(result);
@@ -79,7 +82,33 @@ async function run() {
             res.send(result)
         })
 
-        // Role Admin
+        // Add a class
+        app.post("/add-class", async (req, res) => {
+            const item = req.body;
+            const result = await allDataCollection.insertOne(item);
+            res.send(result);
+        });
+
+        //Select class
+        app.post("/select-class", async (req, res) => {
+            const selectedClass = req.body;
+            const result = await selectedClassCollection.insertOne(selectedClass);
+            res.send(result)
+        })
+        app.get('/select-class',  async (req, res) => {
+            const email = req.query.email;
+
+            const query = { userEmail: email };
+            const result = await selectedClassCollection.find(query).toArray();
+            res.send(result);
+            
+        })
+        app.delete('/select-class/:id', async(req,res)=>{
+            const id = req.params.id;
+            const result = await selectedClassCollection.deleteOne({_id: new ObjectId(id)});
+            res.send(result);
+        })
+        //Role Admin
 
         app.get("/users/admin/:email", verifyJWT, async (req, res) => {
             const email = req.params.email;
@@ -132,7 +161,7 @@ async function run() {
             res.send(result);
         });
 
-        
+
 
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
