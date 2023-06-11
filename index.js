@@ -95,17 +95,17 @@ async function run() {
             const result = await selectedClassCollection.insertOne(selectedClass);
             res.send(result)
         })
-        app.get('/select-class',  async (req, res) => {
+        app.get('/select-class', async (req, res) => {
             const email = req.query.email;
 
             const query = { userEmail: email };
             const result = await selectedClassCollection.find(query).toArray();
             res.send(result);
-            
+
         })
-        app.delete('/select-class/:id', async(req,res)=>{
+        app.delete('/select-class/:id', async (req, res) => {
             const id = req.params.id;
-            const result = await selectedClassCollection.deleteOne({_id: new ObjectId(id)});
+            const result = await selectedClassCollection.deleteOne({ _id: new ObjectId(id) });
             res.send(result);
         })
 
@@ -115,15 +115,41 @@ async function run() {
             console.log(status)
             const filter = { class_status: status };
             const updateDoc = {
-              $set: {
-                class_status: "approved",
-              },
+                $set: {
+                    class_status: "approved",
+                },
             };
             const result = await allDataCollection.updateOne(filter, updateDoc);
             res.send(result);
-          });
+        });
+        // Approve Class
+        app.patch("/deny/:status", async (req, res) => {
+            const status = req.params.status;
+            console.log(status)
+            const filter = { class_status: status };
+            const updateDoc = {
+                $set: {
+                    class_status: "denied",
+                },
+            };
+            const result = await allDataCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        });
 
+        // Feed back 
+        app.patch("/insertFeedback/:id", async (req, res) => {
+            const id = req.params.id;
+            const feedback = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    feedback: feedback,
+                },
+            };
 
+            const result = await allDataCollection.updateOne(filter, updateDoc);
+            res.send(result);
+        });
 
         //Role Admin
 
