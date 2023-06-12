@@ -88,12 +88,28 @@ async function run() {
         })
 
         // Add a class
-        app.post("/add-class", async (req, res) => {
+        app.post("/alldata", async (req, res) => {
             const item = req.body;
             const result = await allDataCollection.insertOne(item);
             res.send(result);
         });
 
+
+        app.get("/add-class", verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            const query = { instructor_email: email };
+
+            if (!email) {
+                res.send([])
+            }
+            const decodedEmail = req.decoded.email;
+            if (email !== decodedEmail) {
+                return res.status(403).send({ error: true, message: "Forbidden Access" })
+            }
+            console.log(email, query);
+            const result = await allDataCollection.find(query).toArray();
+            res.send(result)
+        })
         //Select class
         app.post("/select-class", async (req, res) => {
             const selectedClass = req.body;
@@ -156,6 +172,22 @@ async function run() {
             res.send(result);
         });
 
+        // Myclasses
+        app.get("/myclass", verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            const query = { instructor_email: email };
+
+            if (!email) {
+                res.send([])
+            }
+            const decodedEmail = req.decoded.email;
+            if (email !== decodedEmail) {
+                return res.status(403).send({ error: true, message: "Forbidden Access" })
+            }
+            console.log(email, query);
+            const result = await allDataCollection.find(query).toArray();
+            res.send(result)
+        })
         //Role Admin
 
         app.get("/users/admin/:email", verifyJWT, async (req, res) => {
@@ -227,6 +259,11 @@ async function run() {
             const result = await paymentsCollection.insertOne(payment);
             res.send(result);
         });
+
+        app.get("/enrolled-class", async (req, res) => {
+            const result = await paymentsCollection.find().sort({ transectionId: -1 }).toArray();
+            res.send(result)
+        })
 
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
