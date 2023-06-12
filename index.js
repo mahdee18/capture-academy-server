@@ -51,8 +51,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-
-
         app.post("/jwt", (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '1h' });
@@ -190,7 +188,7 @@ async function run() {
         })
         //Role Admin
 
-        app.get("/users/admin/:email", verifyJWT, async (req, res) => {
+        app.get("/users/admin/:email", verifyJWT,verifyAdmin, async (req, res) => {
             const email = req.params.email;
             if (req.decoded.email !== email) {
                 res.send({ admin: false })
