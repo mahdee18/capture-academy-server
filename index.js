@@ -119,7 +119,6 @@ async function run() {
         })
         app.get('/select-class', async (req, res) => {
             const email = req.query.email;
-
             const query = { userEmail: email };
             const result = await selectedClassCollection.find(query).toArray();
             res.send(result);
@@ -263,8 +262,11 @@ async function run() {
         app.post("/news-letter-email",  async (req, res) => {
             let newsletterData = req.body;
             const result = await  newsletterCollection.insertOne(newsletterData)
-            res.json()
+            res.json(result)
         }),
+
+  
+
         app.get("/enrolled-class", async (req, res) => {
             const result = await paymentsCollection.find().sort({ transectionId: -1 }).toArray();
             res.send(result)
