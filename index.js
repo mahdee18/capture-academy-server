@@ -69,6 +69,8 @@ async function run() {
 
         // Create A collection for Payment
         const paymentsCollection = client.db('CaptureDB').collection('payment')
+        // Create A collection for Payment
+        const newsletterCollection = client.db('CaptureDB').collection('newsletterEmail')
 
         app.get('/alldata', async (req, res) => {
             const result = await allDataCollection.find().toArray()
