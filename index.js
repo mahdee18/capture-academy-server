@@ -6,7 +6,8 @@ require('dotenv').config()
 var jwt = require('jsonwebtoken');
 const port = process.env.PORT || 3000;
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-// console.log(stripe)
+
+
 // Middleware
 app.use(cors());
 app.use(express.json())
@@ -26,8 +27,8 @@ const verifyJWT = (req, res, next) => {
         next();
     })
 }
-// Verify Admin
 
+// Verify Admin
 const verifyAdmin = async (req, res, next) => {
     const email = req.decoded.email;
     const query = { email: email };
@@ -59,12 +60,13 @@ async function run() {
 
         // Create a classes collection
         const allDataCollection = client.db('CaptureDB').collection('classes')
+
         // Create A collection for users
         const usersCollection = client.db('CaptureDB').collection('users')
 
-        // Create A collection for selected Users
+        // Create A collection for selected classes
         const selectedClassCollection = client.db('CaptureDB').collection('selectedClass')
-        
+
         // Create A collection for Payment
         const paymentsCollection = client.db('CaptureDB').collection('payment')
 
@@ -104,7 +106,6 @@ async function run() {
             if (email !== decodedEmail) {
                 return res.status(403).send({ error: true, message: "Forbidden Access" })
             }
-            console.log(email, query);
             const result = await allDataCollection.find(query).toArray();
             res.send(result)
         })
@@ -131,7 +132,6 @@ async function run() {
         // Approve Class
         app.patch("/alldata/:status", async (req, res) => {
             const status = req.params.status;
-            console.log(status)
             const filter = { class_status: status };
             const updateDoc = {
                 $set: {
@@ -144,7 +144,6 @@ async function run() {
         // Denied Class
         app.patch("/deny/:status", async (req, res) => {
             const status = req.params.status;
-            console.log(status)
             const filter = { class_status: status };
             const updateDoc = {
                 $set: {
@@ -155,7 +154,7 @@ async function run() {
             res.send(result);
         });
 
-        // Feed back 
+        // Feedback 
         app.patch("/insertFeedback/:id", async (req, res) => {
             const id = req.params.id;
             const feedback = req.body;
@@ -170,7 +169,7 @@ async function run() {
             res.send(result);
         });
 
-        // Myclasses
+        // MyClasses
         app.get("/myclass", verifyJWT, async (req, res) => {
             const email = req.query.email;
             const query = { instructor_email: email };
@@ -186,8 +185,8 @@ async function run() {
             const result = await allDataCollection.find(query).toArray();
             res.send(result)
         })
-        //Role Admin
 
+        //Role Admin
         app.get("/users/admin/:email", verifyJWT,verifyAdmin, async (req, res) => {
             const email = req.params.email;
             if (req.decoded.email !== email) {
@@ -212,8 +211,8 @@ async function run() {
             const result = await usersCollection.updateOne(filter, updateDoc);
             res.send(result);
         });
-        // Role Instructor
 
+        // Role Instructor
         app.get("/users/instructor/:email", verifyJWT, async (req, res) => {
             const email = req.params.email;
             if (req.decoded.email !== email) {
@@ -258,6 +257,12 @@ async function run() {
             res.send(result);
         });
 
+        // POST METHOD FOR NEWSLETTER
+        app.post("/newsLetterEmail",  async (req, res) => {
+            let newsletterData = req.body;
+            const result = await  newsletterCollection.insertOne(newsletterData)
+            res.json()
+        }),
         app.get("/enrolled-class", async (req, res) => {
             const result = await paymentsCollection.find().sort({ transectionId: -1 }).toArray();
             res.send(result)
