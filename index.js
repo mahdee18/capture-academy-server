@@ -258,7 +258,7 @@ async function run() {
         });
 
         // POST METHOD FOR NEWSLETTER
-        app.post("/newsLetterEmail",  async (req, res) => {
+        app.post("/news-letter-email",  async (req, res) => {
             let newsletterData = req.body;
             const result = await  newsletterCollection.insertOne(newsletterData)
             res.json()
