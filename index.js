@@ -187,6 +187,30 @@ async function run() {
             res.send(result)
         })
 
+                // POST METHOD FOR NEWSLETTER
+                app.post("/news-letter-email",  async (req, res) => {
+                    const { email } = req.body;
+                // Check if the email already exists in the database
+                    const existingUser = await newsletterCollection.findOne({ email });
+                    if (existingUser) {
+                        // If the email exists, update the existing user's email
+                        await newsletterCollection.updateOne(
+                            { email },
+                            { $set: { email } }
+                        );
+                        res.json({ message: 'User email updated successfully' });
+                    } else {
+                        // If the email doesn't exist, insert a new entry
+                        const result = await newsletterCollection.insertOne({ email });
+                        res.json(result);
+                    }
+        
+                }),
+                // Get Newsletter User
+                app.get("/news-letter-email", async (req, res) => {
+                    const result = await newsletterCollection.find().toArray();
+                    res.send(result);
+                })
         //Role Admin
         app.get("/users/admin/:email", verifyJWT,verifyAdmin, async (req, res) => {
             const email = req.params.email;
@@ -226,7 +250,6 @@ async function run() {
             res.send(result)
         })
 
-
         app.patch("/users/instructor/:id", async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
@@ -251,37 +274,11 @@ async function run() {
             res.send({ clientSecret: paymentIntent.client_secret });
         });
 
-
         app.post("/paymenthistory", verifyJWT, async (req, res) => {
             const payment = req.body;
             const result = await paymentsCollection.insertOne(payment);
             res.send(result);
         });
-
-        // POST METHOD FOR NEWSLETTER
-        app.post("/news-letter-email",  async (req, res) => {
-            const { email } = req.body;
-        // Check if the email already exists in the database
-            const existingUser = await newsletterCollection.findOne({ email });
-            if (existingUser) {
-                // If the email exists, update the existing user's email
-                await newsletterCollection.updateOne(
-                    { email },
-                    { $set: { email } }
-                );
-                res.json({ message: 'User email updated successfully' });
-            } else {
-                // If the email doesn't exist, insert a new entry
-                const result = await newsletterCollection.insertOne({ email });
-                res.json(result);
-            }
-
-        }),
-        // Get Newsletter User
-        app.get("/news-letter-email", async (req, res) => {
-            const result = await newsletterCollection.find().toArray();
-            res.send(result);
-        })
 
         app.get("/enrolled-class", async (req, res) => {
             const result = await paymentsCollection.find().sort({ transectionId: -1 }).toArray();
