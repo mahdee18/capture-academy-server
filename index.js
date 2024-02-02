@@ -68,6 +68,7 @@ async function run() {
 
         // Create A collection for Payment
         const paymentsCollection = client.db('CaptureDB').collection('payment')
+        
         // Create A collection for Payment
         const newsletterCollection = client.db('CaptureDB').collection('newsletterEmail')
 
@@ -298,7 +299,6 @@ async function run() {
     }
 }
 run().catch(console.dir);
-
 
 app.get('/', (req, res) => {
     res.send('Capture Academy is running!')
