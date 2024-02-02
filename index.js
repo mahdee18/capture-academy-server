@@ -7,7 +7,6 @@ var jwt = require('jsonwebtoken');
 const port = process.env.PORT || 3000;
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-
 // Middleware
 app.use(cors());
 app.use(express.json())
@@ -96,7 +95,6 @@ async function run() {
             res.send(result);
         });
 
-
         app.get("/add-class", verifyJWT, async (req, res) => {
             const email = req.query.email;
             const query = { instructor_email: email };
@@ -111,12 +109,14 @@ async function run() {
             const result = await allDataCollection.find(query).toArray();
             res.send(result)
         })
+
         //Select class
         app.post("/select-class", async (req, res) => {
             const selectedClass = req.body;
             const result = await selectedClassCollection.insertOne(selectedClass);
             res.send(result)
         })
+
         app.get('/select-class', async (req, res) => {
             const email = req.query.email;
             const query = { userEmail: email };
@@ -124,6 +124,7 @@ async function run() {
             res.send(result);
 
         })
+
         app.delete('/select-class/:id', async (req, res) => {
             const id = req.params.id;
             const result = await selectedClassCollection.deleteOne({ _id: new ObjectId(id) });
@@ -142,6 +143,7 @@ async function run() {
             const result = await allDataCollection.updateOne(filter, updateDoc);
             res.send(result);
         });
+
         // Denied Class
         app.patch("/deny/:status", async (req, res) => {
             const status = req.params.status;
@@ -211,6 +213,7 @@ async function run() {
                     const result = await newsletterCollection.find().toArray();
                     res.send(result);
                 })
+
         //Role Admin
         app.get("/users/admin/:email", verifyJWT,verifyAdmin, async (req, res) => {
             const email = req.params.email;
@@ -223,7 +226,6 @@ async function run() {
             const result = { admin: user?.role === "admin" }
             res.send(result)
         })
-
 
         app.patch("/users/admin/:id", async (req, res) => {
             const id = req.params.id;
