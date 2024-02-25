@@ -14,6 +14,7 @@ app.use(express.json())
 // Verify JWT
 const verifyJWT = (req, res, next) => {
     const authorization = req.headers.authorization;
+    
     if (!authorization) {
         return res.status(401).send({ error: true, message: 'Unauthorized Access!' })
     }
